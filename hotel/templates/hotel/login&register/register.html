@@ -1,0 +1,205 @@
+{% extends 'hotel/html/base.html' %}
+{% block title %}Register - MyHotel{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 600px;">
+    <div class="card shadow-lg">
+        <div class="card-header text-white" style="background: linear-gradient(135deg, #00e5ff 0%, #0099cc 100%); color: #0a192f;">
+            <h3 class="mb-0"><i class="fas fa-user-plus"></i> Create Account</h3>
+        </div>
+        <div class="card-body p-4">
+            {% if messages %}
+                {% for message in messages %}
+                    {% if 'success' in message.tags or 'info' in message.tags %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% elif 'error' in message.tags %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ form.non_field_errors }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+
+            <form method="POST" novalidate>
+                {% csrf_token %}
+
+                <!-- Account Information -->
+                <h5 class="mb-3" style="font-weight: 700; color: #2c3e50;">
+                    <i class="fas fa-lock"></i> Account Information
+                </h5>
+
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Username</label>
+                    <input type="text" id="id_username" name="username" class="form-control form-control-lg" placeholder="Choose a username" required>
+                    {% if form.username.errors %}
+                        <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Email Address</label>
+                    <input type="email" id="id_email" name="email" class="form-control form-control-lg" placeholder="Enter your email" required>
+                    {% if form.email.errors %}
+                        <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label">Password</label>
+                    <input type="password" id="id_password1" name="password1" class="form-control form-control-lg" placeholder="Create a strong password" required>
+                    {% if form.password1.errors %}
+                        <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password2" class="form-label">Confirm Password</label>
+                    <input type="password" id="id_password2" name="password2" class="form-control form-control-lg" placeholder="Confirm your password" required>
+                    {% if form.password2.errors %}
+                        <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Guest Information -->
+                <h5 class="mb-3" style="font-weight: 700; color: #2c3e50;">
+                    <i class="fas fa-user"></i> Personal Information
+                </h5>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label">First Name</label>
+                        <input type="text" id="id_first_name" name="first_name" class="form-control form-control-lg" placeholder="First name" required>
+                        {% if form.first_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label">Last Name</label>
+                        <input type="text" id="id_last_name" name="last_name" class="form-control form-control-lg" placeholder="Last name">
+                        {% if form.last_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_phone" class="form-label">Phone Number</label>
+                    <input type="tel" id="id_phone" name="phone" class="form-control form-control-lg" placeholder="Enter your phone number" required>
+                    {% if guest_form.phone.errors %}
+                        <div class="text-danger small mt-1">{{ guest_form.phone.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_address" class="form-label">Address</label>
+                    <textarea id="id_address" name="address" class="form-control" rows="3" placeholder="Enter your address" required></textarea>
+                    {% if guest_form.address.errors %}
+                        <div class="text-danger small mt-1">{{ guest_form.address.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+
+            <div class="mt-4 text-center">
+                <p class="text-muted">
+                    Already have an account? <a href="{% url 'login' %}" class="btn-link text-decoration-none">Sign in</a>
+                </p>
+            </div>
+
+            <hr>
+
+            <div class="text-center">
+                <small class="text-muted">
+                    <i class="fas fa-shield-alt"></i> Your information is secure and encrypted.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: 1px solid rgba(0, 229, 255, 0.1);
+        border-radius: 16px;
+        background: linear-gradient(135deg, #0f1a33 0%, #0b1220 100%);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .form-control-lg {
+        border-radius: 8px;
+        border: 1px solid rgba(0, 229, 255, 0.2);
+        padding: 12px 16px;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: #e6f1ff;
+    }
+    .form-control-lg:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #00e5ff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 229, 255, 0.25);
+        color: #e6f1ff;
+    }
+    .form-control-lg::placeholder {
+        color: rgba(230, 241, 255, 0.5);
+    }
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid rgba(0, 229, 255, 0.2);
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #e6f1ff;
+    }
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #00e5ff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 229, 255, 0.25);
+        color: #e6f1ff;
+    }
+    .form-control::placeholder {
+        color: rgba(230, 241, 255, 0.5);
+    }
+    .form-label {
+        color: #e6f1ff;
+        font-weight: 600;
+    }
+    .btn-primary {
+        background: #00e5ff;
+        border-color: #00e5ff;
+        color: #0a192f;
+        font-weight: 700;
+    }
+    .btn-primary:hover {
+        background: #00d4e8;
+        border-color: #00d4e8;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4);
+    }
+    .btn-link {
+        color: #00e5ff;
+        font-weight: 600;
+    }
+    .btn-link:hover {
+        color: #00d4e8;
+        text-decoration: underline;
+    }
+    .text-muted {
+        color: rgba(230, 241, 255, 0.6) !important;
+    }
+</style>
+
+{% endblock %}

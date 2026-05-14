@@ -1,0 +1,520 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Admin Panel{% endblock %}</title>
+
+  <!-- Bootstrap (CSS + JS) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  {% block extra_head %}{% endblock %}
+
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --panel:#ffffff;
+      --line:#e8eef7;
+
+      --text:#0b1220;
+      --muted:#667085;
+
+      --nav:#0f2133;
+      --nav-2:#0c1a2a;
+
+      --accent:#22c55e;
+      --accent-2:#6ee7b7;
+
+      --shadow: 0 10px 30px rgba(11,18,32,.07);
+      --radius: 16px;
+    }
+
+    body{ background:var(--bg); color:var(--text); font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-weight:500; }
+
+    /* ===== Layout ===== */
+    .adm-shell{ min-height:100vh; display:flex; }
+
+    /* Left icon rail */
+    .rail{
+      width:66px;
+      background:linear-gradient(180deg,#ffffff, #f6f8fb);
+      border-right:1px solid var(--line);
+      padding:14px 10px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      position:sticky;
+      top:0;
+      height:100vh;
+    }
+    .rail .rail-pill{
+      width:42px;height:42px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      background:#fff;border:1px solid var(--line);
+      box-shadow: 0 8px 18px rgba(11,18,32,.06);
+      color:#0f172a;
+      font-weight:900;
+    }
+    .rail .rail-btn{
+      width:42px;height:42px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      color:#667085;
+      background:transparent;
+      border:1px solid transparent;
+      transition:.15s ease;
+      text-decoration:none;
+    }
+    .rail .rail-btn:hover{ background:#fff; border-color:var(--line); }
+    .rail .rail-btn.active{ background:#e9fff3; border-color:#b7f3d0; color:#0f172a; }
+
+    .rail .rail-spacer{ flex:1; }
+
+    /* Main sidebar */
+    .sidebar{
+      width:260px;
+      background:linear-gradient(180deg,var(--nav), var(--nav-2));
+      color:#fff;
+      padding:11px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+    }
+    .sidebar .user-name,
+    .sidebar .user-role,
+    .sidebar .user-email{
+      color: #e5e7eb;
+    }
+
+
+    .brand{
+      display:flex; gap:12px; align-items:center;
+      padding:6px 8px;
+    }
+    .brand-logo{
+      width:44px;height:44px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      background:#ffcf7a;color:#0b1220;
+      font-weight:1000;
+      letter-spacing:.5px;
+    }
+    .brand-name{ font-weight:800; line-height:1.1; }
+    .brand-sub{ font-size:12px; color:rgba(255,255,255,.70); font-weight:600; }
+
+    .nav-group-title{
+      font-size:11px;
+      letter-spacing:.08em;
+      color:rgba(255,255,255,.55);
+      font-weight:900;
+      margin-top:8px;
+      padding:0 10px;
+    }
+
+    .nav-list{ display:flex; flex-direction:column; gap:6px; }
+    .nav-item{
+      display:flex; align-items:center; gap:12px;
+      padding:11px 12px;
+      border-radius:12px;
+      color:rgba(255,255,255,.85);
+      text-decoration:none;
+      font-weight:700;
+      transition:.15s ease;
+    }
+    .nav-item i{ width:18px; text-align:center; opacity:.95; }
+    .nav-item:hover{ background:rgba(255,255,255,.08); color:#fff; }
+    .nav-item.active{ background:rgba(255,255,255,.12); color:#fff; }
+
+    .sidebar-footer{
+      margin-top:auto;
+      padding-top:12px;
+      border-top:1px solid rgba(255,255,255,.10);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .user-mini{
+      display:flex; gap:12px; align-items:center;
+      padding:10px;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+    }
+    .avatar{
+      width:42px;height:42px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      background:#0b1220;
+      font-weight:1000;
+    }
+    .user-name{ font-weight:700; font-size:14px; line-height:1.1; }
+    .user-role{ font-size:12px; color:rgba(255,255,255,.65); font-weight:600; }
+    .logout{
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:#ff5a5f;
+      text-decoration:none;
+      color:#fff;
+      font-weight:1000;
+    }
+
+    /* Content area */
+    .content{
+      flex:1;
+      padding:22px 22px 44px;
+    }
+    .content-inner{
+      max-width:1200px;
+      margin:0 auto;
+    }
+
+    /* Topbar */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .page-title{
+      font-weight:800;
+      margin:0;
+      font-size:20px;
+    }
+    .page-sub{
+      margin:0;
+      font-weight:600;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .search{
+      display:flex; align-items:center; gap:10px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      min-width:260px;
+      box-shadow: 0 8px 20px rgba(11,18,32,.05);
+    }
+    .search i{ color:#98a2b3; }
+    .search input{
+      border:none; outline:none; width:100%;
+      font-weight:800;
+      color:var(--text);
+    }
+
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      font-weight:900;
+      color:#111827;
+      box-shadow: 0 8px 20px rgba(11,18,32,.05);
+      text-decoration:none;
+      cursor:pointer;
+    }
+
+    /* Reusable card */
+    .admin-card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
+
+    .messages .alert{ margin-bottom:12px; border-radius:14px; }
+
+    /* Alert Styles */
+    .alert {
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      border-left: 4px solid;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    .alert-success {
+      background-color: rgba(34, 197, 94, 0.1);
+      border-left-color: #22c55e;
+      color: #15803d;
+    }
+
+    .alert-danger, .alert-error {
+      background-color: rgba(239, 68, 68, 0.1);
+      border-left-color: #ef4444;
+      color: #991b1b;
+    }
+
+    .alert-warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      border-left-color: #f59e0b;
+      color: #92400e;
+    }
+
+    .alert-info {
+      background-color: rgba(59, 130, 246, 0.1);
+      border-left-color: #3b82f6;
+      color: #1e40af;
+    }
+
+    .alert i {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .alert .btn-close {
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px){
+      .sidebar{ display:none; }
+    }
+    @media (max-width: 860px){
+      .rail{ display:none; }
+      .search{ min-width: 180px; }
+      .content{ padding:16px; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="adm-shell">
+
+  <!-- Icon rail -->
+  
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        {% if site_initials %}
+          {{ site_initials|slice:":1"|upper }}
+        {% elif site_name %}
+          {{ site_name|slice:":1"|upper }}
+        {% else %}
+          GH
+        {% endif %}
+      </div>
+        <div>
+          <div class="brand-name">{{ site_name|default:"Grand Hotel" }}</div>
+          <div class="brand-sub">{{ site_subtitle|default:"Management System" }}</div>
+        </div>
+    </div>
+
+    <div class="nav-group-title">MANAGEMENT</div>
+    <nav class="nav-list">
+      <a href="{% url 'admin_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+        <i class="fa-solid fa-chart-line"></i> Dashboard
+      </a>
+
+     <a href="{% url 'manage_categories' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_categories' %}active{% endif %}">
+        <i class="fa-solid fa-layer-group"></i> Category
+      </a>
+
+      <a href="{% url 'manage_rooms' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_rooms' %}active{% endif %}">
+        <i class="fa-solid fa-door-open"></i> Rooms
+      </a>
+
+       <a href="{% url 'manage_users' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_users' %}active{% endif %}">
+        <i class="fa-solid fa-users"></i> Guests
+      </a>
+
+      <a href="{% url 'manage_reservations' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_reservations' %}active{% endif %}">
+        <i class="fa-solid fa-calendar-check"></i> Reservations
+      </a>
+
+      <a href="{% url 'manage_bookings' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_bookings' %}active{% endif %}">
+        <i class="fa-solid fa-book"></i> Booking
+      </a>
+
+      <a href="{% url 'manage_payment' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_payment' %}active{% endif %}">
+        <i class="fa-solid fa-credit-card"></i> Payment
+      </a>
+
+      <a href="{% url 'manage_services' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_services' %}active{% endif %}">
+        <i class="fa-solid fa-concierge-bell"></i> Services
+      </a>
+
+      <a href="{% url 'manage_reviews' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_reviews' %}active{% endif %}">
+        <i class="fa-solid fa-star"></i> Review & Rating
+      </a>
+
+      <a href="{% url 'manage_contacts' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_contacts' %}active{% endif %}">
+        <i class="fa-solid fa-envelope"></i> Contact
+      </a>
+
+      <a href="{% url 'admin_reports' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}">
+        <i class="fa-solid fa-chart-pie"></i> Reports
+      </a>
+
+      <a href="/admin/" target="_blank" class="nav-item">
+        <i class="fa-solid fa-gear"></i> Django Admin
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-mini">
+        <div class="avatar">
+          {{ request.user.first_name|default:request.user.username|slice:":1" }}
+        </div>
+        <div>
+          <div class="user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+          <div class="user-role">{{ user_role|default:"Manager" }}</div>
+        </div>
+      </div>
+      <a class="logout" href="{% url 'logout' %}" id="logoutBtn">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
+
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <main class="content">
+    <div class="content-inner">
+
+     
+
+      <!-- Topbar -->
+      <!-- <div class="topbar">
+        <div class="top-left">
+          <div>
+            <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <p class="page-sub">{% block page_subtitle %}Overview of hotel performance{% endblock %}</p>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <div class="search d-none d-md-flex">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" placeholder="Search..." />
+          </div>
+
+          <div class="dropdown">
+            <button class="chip dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="fa-regular fa-calendar"></i> Time period
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#">Today</a></li>
+              <li><a class="dropdown-item" href="#">Last 7 days</a></li>
+              <li><a class="dropdown-item" href="#">Last 30 days</a></li>
+              <li><a class="dropdown-item" href="#">This year</a></li>
+            </ul>
+          </div>
+
+          <a class="chip" href="{% url 'manage_reservations' %}">
+            <i class="fa-solid fa-plus"></i> Add data
+          </a>
+        </div>
+      </div> -->
+
+      {% block admin_content %}{% endblock %}
+    </div>
+  </main>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function (e) {
+      e.preventDefault();   // stop normal logout
+
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You will be logged out of the system.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Yes, Logout",
+        cancelButtonText: "Cancel"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = logoutBtn.href;
+        }
+      });
+    });
+  }
+
+});
+</script>
+
+
+
+</body>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- reusable confirmation handler -->
+<script src="{% static 'hotel/script/sweetalert.js' %}"></script>
+
+{% if messages %}
+<script>
+(function () {
+  // If SweetAlert2 failed to load, stop (prevents console error)
+  if (typeof Swal === "undefined") {
+    console.error("SweetAlert2 (Swal) is not loaded. Check CDN/network.");
+    return;
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 9000,
+      timerProgressBar: true,
+      showCloseButton: true
+    });
+    {% for message in messages %}
+      Toast.fire({
+        icon: "{% if 'success' in message.tags %}success{% elif 'error' in message.tags %}error{% elif 'danger' in message.tags %}error{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}",
+        title: "{{ message|escapejs }}"
+      });
+    {% endfor %}
+  });
+})();
+</script>
+{% endif %}
+
+</html>

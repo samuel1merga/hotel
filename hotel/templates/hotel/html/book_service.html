@@ -1,0 +1,246 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}Book {{ service.name }} - MyHotel{% endblock %}
+
+{% block content %}
+<style>
+  .booking-wrap { max-width: 1100px; margin: 0 auto; }
+  .booking-card { border: 1px solid rgba(255,255,255,.08); border-radius: 14px; overflow: hidden; }
+  .booking-head {
+    background: linear-gradient(135deg, rgba(0,217,255,.18), rgba(0,0,0,.0));
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 18px 20px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .booking-head h3 { margin:0; font-weight:700; letter-spacing:.2px; }
+  .badge-soft {
+    background: rgba(0,217,255,.14);
+    color: #00d9ff;
+    border: 1px solid rgba(0,217,255,.25);
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .booking-body { padding: 20px; }
+  .form-label { font-weight: 600; margin-bottom: 6px; }
+  .form-control, select, textarea {
+    border-radius: 12px !important;
+    padding: 10px 12px !important;
+    border: 1px solid rgba(255,255,255,.12) !important;
+    background: rgba(255,255,255,.03) !important;
+    color: inherit !important;
+  }
+  .textarea-style {
+    min-height: 100px;
+    resize: vertical;
+  }
+  .help-text { font-size: 12px; opacity: .75; margin-top: 6px; }
+  .summary-card { position: sticky; top: 18px; }
+  .summary-row { display:flex; justify-content:space-between; gap:10px; margin: 10px 0; }
+  .summary-total {
+    border-top: 1px dashed rgba(255,255,255,.18);
+    padding-top: 12px;
+    margin-top: 12px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .big-total { font-size: 22px; font-weight: 800; }
+  .btn-round { border-radius: 12px; padding: 10px 14px; }
+  .service-desc { 
+    background: rgba(0,217,255,.06);
+    border-left: 3px solid rgba(0,217,255,.4);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+  .btn-cancel-red{
+    background: #ef4444;
+    color: #fff;
+    border: none;
+  }
+
+  .btn-cancel-red:hover{
+    background: #dc2626;
+    color: #fff;
+  }
+  .text-muted {
+    color: rgba(255,255,255,.7) !important;
+  }
+
+  
+</style>
+
+<div class="booking-wrap">
+  <div class="row g-4">
+    <!-- LEFT: Form -->
+    <div class="col-lg-8">
+      <div class="card booking-card">
+        <div class="booking-head">
+          <div>
+            <h3>Book {{ service.name }}</h3>
+            <div class="text-muted" style="font-size:13px; margin-top:4px;">
+              Service Booking • Secure & Instant
+            </div>
+          </div>
+          <span class="badge-soft">Service Booking</span>
+        </div>
+
+        <div class="card-body booking-body">
+         
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              {{ form.non_field_errors }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endif %}
+
+          {% if service.image %}
+            <div class="text-center mb-3">
+              <img src="{{ service.image.url }}" alt="{{ service.name }}" style="max-width:360px; width:100%; border-radius:8px; object-fit:cover;">
+            </div>
+          {% endif %}
+
+          <div class="service-desc">
+            <strong>{{ service.name }}</strong><br>
+            <small class="text-muted">{{ service.description }}</small>
+          </div>
+
+          <form method="POST" novalidate>
+            {% csrf_token %}
+
+            <div class="row g-3">
+              {% for field in form %}
+                <div class="col-md-{% if field.name == 'notes' %}12{% else %}6{% endif %}">
+                  <label class="form-label">{{ field.label }}</label>
+                  {% if field.name == 'notes' %}
+                    {{ field }}
+                  {% else %}
+                    {{ field }}
+                  {% endif %}
+                  {% if field.help_text %}
+                    <div class="help-text">{{ field.help_text|safe }}</div>
+                  {% endif %}
+                  {% if field.errors %}
+                    <div class="text-danger"><small>{{ field.errors }}</small></div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+              <a href="{% url 'service' %}" class="btn btn-cancel-red btn-round">
+                Cancel
+              </a>
+
+            </div>
+          </form>
+
+          <!-- Add to Cart Alternative Section -->
+          <div style="margin-top: 24px; padding-top: 24px; border-top: 1px dashed rgba(255,255,255,.18);">
+            <p style="color: rgba(255,255,255,.7); font-size: 13px; margin-bottom: 12px;">
+              <i class="fas fa-info-circle"></i> Or add this service to your shopping cart
+            </p>
+            <form id="cart-form" method="POST" action="{% url 'add_service_to_cart' service.id %}" style="display: flex; gap: 8px;">
+              {% csrf_token %}
+              <input type="hidden" name="scheduled_date" id="cart_scheduled_date" />
+              <div style="flex: 1;">
+                <input type="number" name="quantity" class="form-control form-control-sm" value="1" min="1" required style="border-radius: 8px;">
+              </div>
+              <button type="submit" class="btn btn-outline-success btn-round" style="white-space: nowrap;">
+                <i class="fas fa-shopping-cart"></i> Add to Cart
+              </button>
+            </form>
+          </div>
+
+          <div class="mt-4 text-muted" style="font-size: 13px;">
+            Your service booking will be confirmed by our team and you'll receive updates via email.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Summary -->
+    <div class="col-lg-4">
+      <div class="card booking-card summary-card">
+        <div class="booking-head">
+          <h5 class="m-0" style="font-weight:800;">Booking Summary</h5>
+          <span class="badge-soft">Service Details</span>
+        </div>
+
+        <div class="card-body booking-body">
+          <div class="summary-row">
+            <span class="text-muted">Service</span>
+            <strong>{{ service.name }}</strong>
+          </div>
+
+          <div class="summary-row">
+            <span class="text-muted">Price per Unit</span>
+            <strong>$<span id="pricePerUnit">{{ service.price }}</span></strong>
+          </div>
+
+          <div class="summary-row">
+            <span class="text-muted">Quantity</span>
+            <strong><span id="quantity">1</span></strong>
+          </div>
+
+          <div class="summary-total">
+            <span class="text-muted">Estimated Total</span>
+            <span class="big-total">$<span id="total">{{ service.price }}</span></span>
+          </div>
+
+          <div class="mt-3 text-muted" style="font-size: 12px;">
+            <i class="fas fa-info-circle"></i> Final price may vary based on service requirements.
+          </div>
+
+          <div class="mt-3 p-2" style="background: rgba(0,217,255,.08); border-radius: 8px; font-size: 12px;">
+            <strong>Status: Pending</strong><br>
+            Your booking will need admin approval for confirmation.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const quantityInput = document.querySelector('input[name="quantity"]') || 
+                         document.querySelector('#id_quantity');
+    const priceEl = document.getElementById('pricePerUnit');
+    const quantityEl = document.getElementById('quantity');
+    const totalEl = document.getElementById('total');
+
+    const pricePerUnit = parseFloat((priceEl?.textContent || "0").replace(/[^0-9.]/g,'')) || 0;
+
+    function calc() {
+      const qty = parseInt(quantityInput?.value || "1") || 1;
+      quantityEl.textContent = String(qty);
+      const total = qty * pricePerUnit;
+      totalEl.textContent = total.toFixed(2);
+    }
+
+    if (quantityInput) {
+      quantityInput.addEventListener('change', calc);
+      quantityInput.addEventListener('input', calc);
+    }
+    calc();
+
+    // synchronize scheduled date into cart form
+    const dateInput = document.querySelector('input[name="scheduled_date"]');
+    const cartDate = document.getElementById('cart_scheduled_date');
+    const cartForm = document.getElementById('cart-form');
+
+    if (dateInput && cartDate && cartForm) {
+      // copy on change and before submit
+      function syncDate() {
+        cartDate.value = dateInput.value;
+      }
+      dateInput.addEventListener('change', syncDate);
+      dateInput.addEventListener('input', syncDate);
+      cartForm.addEventListener('submit', syncDate);
+    }
+  })();
+</script>
+{% endblock %}

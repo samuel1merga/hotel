@@ -1,0 +1,310 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}Payment - MyHotel{% endblock %}
+
+{% block content %}
+
+<style>
+  .payment-container {
+    max-width: 1000px;
+    margin: 40px auto;
+  }
+
+  .payment-header {
+    margin-bottom: 30px;
+  }
+
+  .payment-title {
+    font-size: 28px;
+    font-weight: 900;
+    color: #0f172a;
+    margin-bottom: 6px;
+  }
+
+  .payment-subtitle {
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  .bank-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .bank-box h6 {
+    margin: 0 0 8px 0;
+    font-weight: 800;
+  }
+
+  .bank-box p {
+    margin: 0;
+    font-size: 14px;
+    color: #334155;
+  }
+
+  .order-items {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .order-item:last-child {
+    border-bottom: none;
+  }
+
+  .item-name {
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .item-details {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .item-price {
+    font-weight: 800;
+    color: #2563eb;
+  }
+
+  .order-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 2px solid #e2e8f0;
+    font-weight: 900;
+    font-size: 18px;
+  }
+
+  .total-amount {
+    color: #22c55e;
+  }
+</style>
+
+<div class="payment-container">
+
+  <!-- HEADER -->
+  <div class="payment-header">
+    <h1 class="payment-title">Payment</h1>
+    <p class="payment-subtitle">
+      Complete your booking by selecting a payment method
+    </p>
+  </div>
+
+  <!-- HOTEL BANK INFO -->
+  <div class="bank-box">
+    <h6>🏦 Hotel Bank Account</h6>
+    <p><strong>Bank:</strong> Commercial Bank of Ethiopia (CBE)</p>
+    <p><strong>Account Name:</strong> samuel merga</p>
+    <p><strong>Account No:</strong> 1000111257947</p>
+    <p style="color:#64748b;font-size:13px;margin-top:6px;">
+      Use this account for all bank transfers from any Ethiopian bank.
+    </p>
+  </div>
+
+  <div class="row">
+
+    <!-- PAYMENT FORM -->
+    <div class="col-lg-8">
+
+      <div class="card">
+        <div class="card-header">
+          <h5>Select Payment Method</h5>
+        </div>
+
+        <div class="card-body">
+
+          {% if multiple_items %}
+
+          <form method="POST" action="{% url 'checkout_payment' %}">
+            {% csrf_token %}
+
+            <!-- Payment Method -->
+            <div class="mb-3">
+              <label class="form-label">Payment Method</label>
+              <select name="payment_method" id="payment_method" class="form-control" required>
+                <option value="">-- Select Method --</option>
+                <option value="Cash">Cash</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Online">Online Payment</option>
+                <option value="Card">Card</option>
+              </select>
+            </div>
+
+            <!-- Bank Transfer Fields -->
+            <div id="bank_fields" style="display:none;">
+
+              <div class="mb-3">
+                <label class="form-label">Your Bank</label>
+                <select name="sender_bank" id="sender_bank" class="form-control">
+                  <option value="">-- Select Bank --</option>
+                  <option value="CBE">CBE</option>
+                  <option value="Dashen">Dashen Bank</option>
+                  <option value="Awash">Awash Bank</option>
+                  <option value="BOA">Bank of Abyssinia</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Transaction Reference Number</label>
+                <input
+                  type="text"
+                  name="transaction_id"
+                  id="transaction_id"
+                  class="form-control"
+                  placeholder="Enter bank transaction number"
+                />
+              </div>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Proceed Payment
+            </button>
+
+            <a href="{% url 'view_cart' %}" class="btn btn-secondary">
+              Cancel
+            </a>
+
+          </form>
+
+          {% else %}
+
+          <form method="POST" action="{% url 'payment' reservation.id %}">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label class="form-label">Payment Method</label>
+              <select name="payment_method" id="payment_method" class="form-control" required>
+                <option value="">-- Select Method --</option>
+                <option value="Cash">Cash</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Online">Online</option>
+              </select>
+            </div>
+
+            <div id="bank_fields" style="display:none;">
+              <div class="mb-3">
+                <label class="form-label">Your Bank</label>
+                <input type="text" name="sender_bank" class="form-control">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Transaction Reference</label>
+                <input type="text" name="transaction_id" class="form-control">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Pay Now
+            </button>
+          </form>
+
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDER SUMMARY -->
+    <div class="col-lg-4">
+
+      <div class="card">
+        <div class="card-header">
+          <h5>Order Summary</h5>
+        </div>
+
+        <div class="card-body">
+
+          {% if multiple_items %}
+
+          <div class="order-items">
+
+            {% for res in reservations %}
+            <div class="order-item">
+              <div>
+                <div class="item-name">Room {{ res.room.room_number }}</div>
+                <div class="item-details">
+                  {{ res.check_in_date|date:"M d" }} - {{ res.check_out_date|date:"M d, Y" }}
+                </div>
+              </div>
+              <div class="item-price">${{ res.total_price }}</div>
+            </div>
+            {% endfor %}
+
+            {% for sb in service_bookings %}
+            <div class="order-item">
+              <div>
+                <div class="item-name">{{ sb.service.name }}</div>
+                <div class="item-details">Qty: {{ sb.quantity }}</div>
+              </div>
+              <div class="item-price">${{ sb.total_price }}</div>
+            </div>
+            {% endfor %}
+
+            <div class="order-total">
+              <span>Total</span>
+              <span class="total-amount">${{ total_amount }}</span>
+            </div>
+
+          </div>
+
+          {% else %}
+
+          <p><strong>Room:</strong> {{ reservation.room.room_number }}</p>
+          <p><strong>Check-in:</strong> {{ reservation.check_in_date }}</p>
+          <p><strong>Check-out:</strong> {{ reservation.check_out_date }}</p>
+
+          <hr>
+
+          <p class="h5">
+            <strong>Total:</strong>
+            <span class="text-success">${{ payment.amount }}</span>
+          </p>
+
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JS: Bank Transfer Toggle -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const paymentMethod = document.getElementById("payment_method");
+  const bankFields = document.getElementById("bank_fields");
+  const transactionInput = document.getElementById("transaction_id");
+
+  function toggle() {
+    if (paymentMethod.value === "Bank Transfer") {
+      bankFields.style.display = "block";
+      transactionInput.required = true;
+    } else {
+      bankFields.style.display = "none";
+      transactionInput.required = false;
+      transactionInput.value = "";
+    }
+  }
+
+  paymentMethod.addEventListener("change", toggle);
+  toggle();
+});
+</script>
+
+{% endblock %}

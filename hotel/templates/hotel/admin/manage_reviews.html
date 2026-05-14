@@ -1,0 +1,320 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block admin_content %}
+
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h2 style="margin:0;font-weight:900;">{{ page_title|default:"Manage Reviews & Ratings" }}</h2>
+    <div style="color:var(--muted);font-weight:700;margin-top:6px;">{{ page_subtitle|default:"Room & Service reviews with details." }}</div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addReviewModal" style="font-weight:900;">
+      <i class="fas fa-plus"></i> Add Review
+    </button>
+    <button class="btn btn-outline-secondary btn-sm" id="toggleRoomReviews" style="font-weight:900;">
+      <i class="fas fa-bed"></i> {{ toggle_room_reviews_label|default:"Room Reviews" }}
+    </button>
+    <button class="btn btn-outline-secondary btn-sm" id="toggleServiceReviews" style="font-weight:900;">
+      <i class="fas fa-concierge-bell"></i> {{ toggle_service_reviews_label|default:"Service Reviews" }}
+    </button>
+  </div>
+</div>
+
+<div class="admin-card">
+  <!-- Room Reviews Section -->
+  <div id="roomReviewsSection">
+    <h4 style="margin-bottom:16px;font-weight:900;color:#0f172a;">Room Reviews</h4>
+    {% if reviews %}
+      {% with room_reviews=reviews|dictsort:"created_at" %}
+        {% if room_reviews %}
+          <div style="display:grid;gap:12px;">
+            {% for r in reviews %}
+              {% if r.room %}
+        <div style="padding:14px;border-radius:12px;border:1px solid #eef2f7;background:#fff;">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              {% if r.room.image %}
+                  <img src="{{ r.room.image.url }}" alt="Room {{ r.room.room_number }}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">
+                {% else %}
+                  <div style="width:64px;height:64px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;">
+                    <i class="fas fa-bed"></i>
+                  </div>
+                {% endif %}
+
+              <div>
+                <div style="font-weight:900;">
+                  {{ r.user.get_full_name|default:r.user.username }}
+                  <a href="{% url 'room_detail' r.room.id %}" style="color:var(--muted);font-weight:800;margin-left:8px;">• Room {{ r.room.room_number }}</a>
+                </div>
+
+                <div style="margin-top:6px;color:#111827;">
+                  {% for i in "12345" %}
+                    {% if forloop.counter <= r.rating %}
+                      <i class="fas fa-star" style="color:#f4b63a;"></i>
+                    {% else %}
+                      <i class="fas fa-star" style="color:#e5e7eb;"></i>
+                    {% endif %}
+                  {% endfor %}
+                  <span style="color:var(--muted);font-weight:800;margin-left:8px;">{{ r.rating }}/5</span>
+                </div>
+
+                {% if r.cleanliness or r.comfort or r.amenities %}
+                  <div style="margin-top:8px;color:var(--muted);font-weight:800;">
+                    Cleanliness: {{ r.cleanliness }}/5 • Comfort: {{ r.comfort }}/5 • Amenities: {{ r.amenities }}/5
+                  </div>
+                {% endif %}
+
+                {% if r.review %}
+                  <div style="margin-top:8px;color:#374151;line-height:1.6;">{{ r.review|truncatechars:180 }}</div>
+                {% else %}
+                  <div style="margin-top:8px;color:var(--muted);">No written review.</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div style="text-align:right;">
+              <div style="color:var(--muted);font-size:12px;font-weight:800;">{{ r.created_at|date:"M d, Y" }}</div>
+
+              <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
+                <!-- EDIT (use data attributes instead of inline JS strings) -->
+                <a
+                  href="{% url 'edit_review' r.id %}"
+                  class="btn btn-sm btn-warning"
+                >
+                  <i class="fas fa-edit"></i>
+                </a>
+
+                <!-- DELETE -->
+                <form method="post" action="{% url 'delete_review' r.id %}" class="delete-form">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </form>
+
+              </div>
+            </div>
+          </div>
+        </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="padding:18px;color:var(--muted);">No room reviews found.</div>
+        {% endif %}
+      {% endwith %}
+    {% else %}
+      <div style="padding:18px;color:var(--muted);">No room reviews found.</div>
+    {% endif %}
+  </div>
+
+  <!-- Service Reviews Section -->
+  <div id="serviceReviewsSection" style="display:none;">
+    <h4 style="margin-bottom:16px;font-weight:900;color:#0f172a;">Service Reviews</h4>
+    {% if reviews %}
+      <div style="display:grid;gap:12px;">
+        {% for r in reviews %}
+          {% if r.service %}
+            <div style="padding:14px;border-radius:12px;border:1px solid #eef2f7;background:#fff;">
+              <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+                <div style="display:flex;gap:12px;align-items:flex-start;">
+                  {% if r.service.image %}
+                    <img src="{{ r.service.image.url }}" alt="{{ r.service.name }}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">
+                  {% else %}
+                    <div style="width:64px;height:64px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;">
+                      <i class="fas fa-concierge-bell"></i>
+                    </div>
+                  {% endif %}
+
+                  <div>
+                    <div style="font-weight:900;">
+                      {{ r.user.get_full_name|default:r.user.username }}
+                      <a href="{% url 'book_service' r.service.id %}" style="color:var(--muted);font-weight:800;margin-left:8px;">• Service: {{ r.service.name }}</a>
+                    </div>
+
+                    <div style="margin-top:6px;color:#111827;">
+                      {% for i in "12345" %}
+                        {% if forloop.counter <= r.rating %}
+                          <i class="fas fa-star" style="color:#f4b63a;"></i>
+                        {% else %}
+                          <i class="fas fa-star" style="color:#e5e7eb;"></i>
+                        {% endif %}
+                      {% endfor %}
+                      <span style="color:var(--muted);font-weight:800;margin-left:8px;">{{ r.rating }}/5</span>
+                    </div>
+
+                    {% if r.quality or r.timeliness or r.value_for_money %}
+                      <div style="margin-top:8px;color:var(--muted);font-weight:800;">
+                        Quality: {{ r.quality }}/5 • Timeliness: {{ r.timeliness }}/5 • Value: {{ r.value_for_money }}/5
+                      </div>
+                    {% endif %}
+
+                    {% if r.review %}
+                      <div style="margin-top:8px;color:#374151;line-height:1.6;">{{ r.review|truncatechars:180 }}</div>
+                    {% else %}
+                      <div style="margin-top:8px;color:var(--muted);">No written review.</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div style="text-align:right;">
+                  <div style="color:var(--muted);font-size:12px;font-weight:800;">{{ r.created_at|date:"M d, Y" }}</div>
+
+                  <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
+                    <!-- EDIT (use data attributes instead of inline JS strings) -->
+                    <a
+                      href="{% url 'edit_review' r.id %}"
+                      class="btn btn-sm btn-warning"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </a>
+
+                    <!-- DELETE -->
+                    <form method="post" action="{% url 'delete_review' r.id %}" class="delete-form">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% if not reviews %}
+        <div style="padding:18px;color:var(--muted);">No service reviews found.</div>
+      {% endif %}
+    {% else %}
+      <div style="padding:18px;color:var(--muted);">No service reviews found.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Add Review Modal -->
+<div class="modal fade" id="addReviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" style="font-weight:900;"><i class="fas fa-plus"></i> Add Room Review</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form method="post" action="{% url 'add_review' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:900;">Reservation</label>
+            <select name="reservation" class="form-select" required>
+              <option value="">Select reservation (Checked Out)</option>
+              {% for res in reservations %}
+                <option value="{{ res.id }}">
+                  #{{ res.id }} — {{ res.guest.user.get_full_name|default:res.guest.user.username }}
+                  — Room {{ res.room.room_number }}
+                  ({{ res.check_in_date|date:"M d" }} → {{ res.check_out_date|date:"M d" }})
+                </option>
+              {% endfor %}
+            </select>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+              User + Room will be taken automatically from this reservation.
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Overall Rating</label>
+              <input type="number" name="rating" class="form-control" min="1" max="5" value="5" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Cleanliness</label>
+              <input type="number" name="cleanliness" class="form-control" min="1" max="5" value="5" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Comfort</label>
+              <input type="number" name="comfort" class="form-control" min="1" max="5" value="5" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Amenities</label>
+              <input type="number" name="amenities" class="form-control" min="1" max="5" value="5" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:900;">Review (optional)</label>
+            <textarea name="review" class="form-control" rows="3" placeholder="Write guest feedback..."></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" style="font-weight:900;">
+            <i class="fas fa-check"></i> Add Review
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Toggle between Room and Service Reviews
+document.getElementById('toggleRoomReviews').addEventListener('click', function() {
+  document.getElementById('roomReviewsSection').style.display = 'block';
+  document.getElementById('serviceReviewsSection').style.display = 'none';
+  document.getElementById('toggleRoomReviews').classList.add('btn-primary');
+  document.getElementById('toggleRoomReviews').classList.remove('btn-outline-secondary');
+  document.getElementById('toggleServiceReviews').classList.add('btn-outline-secondary');
+  document.getElementById('toggleServiceReviews').classList.remove('btn-primary');
+});
+
+document.getElementById('toggleServiceReviews').addEventListener('click', function() {
+  document.getElementById('roomReviewsSection').style.display = 'none';
+  document.getElementById('serviceReviewsSection').style.display = 'block';
+  document.getElementById('toggleServiceReviews').classList.add('btn-primary');
+  document.getElementById('toggleServiceReviews').classList.remove('btn-outline-secondary');
+  document.getElementById('toggleRoomReviews').classList.add('btn-outline-secondary');
+  document.getElementById('toggleRoomReviews').classList.remove('btn-primary');
+});
+</script>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  document.querySelectorAll(".delete-form").forEach(function(form) {
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      Swal.fire({
+        title: "Delete this review?",
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
+
+    });
+
+  });
+
+});
+</script>
+
+
+{% endblock %}

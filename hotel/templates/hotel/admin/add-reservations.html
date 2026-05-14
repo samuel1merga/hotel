@@ -1,0 +1,426 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block title %}Add Reservation - Admin Panel{% endblock %}
+
+{% block admin_content %}
+
+<style>
+  .reservation-wrapper{
+    max-width:1100px;
+    margin:auto;
+  }
+
+  .reservation-card{
+    background:#fff;
+    border-radius:18px;
+    padding:28px;
+    border:1px solid #e5e7eb;
+    box-shadow:0 10px 30px rgba(0,0,0,0.04);
+  }
+
+  .section-title{
+    font-size:18px;
+    font-weight:800;
+    color:#0f172a;
+    margin-bottom:18px;
+  }
+
+  .form-label{
+    font-weight:700;
+    margin-bottom:8px;
+    color:#334155;
+  }
+
+  .form-control,
+  .form-select{
+    border-radius:12px;
+    min-height:48px;
+    border:1px solid #dbe2ea;
+    box-shadow:none;
+  }
+
+  .form-control:focus,
+  .form-select:focus{
+    border-color:#3b82f6;
+    box-shadow:0 0 0 4px rgba(59,130,246,.12);
+  }
+
+  .soft-card{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    padding:20px;
+  }
+
+  .muted-text{
+    color:#64748b;
+    font-size:13px;
+  }
+
+  .submit-btn{
+    height:50px;
+    padding:0 24px;
+    border-radius:12px;
+    font-weight:800;
+  }
+
+  .cancel-btn{
+    height:50px;
+    padding:0 24px;
+    border-radius:12px;
+    font-weight:700;
+  }
+
+  .divider{
+    margin:28px 0;
+    border-top:1px dashed #dbe2ea;
+  }
+
+  .room-info{
+    font-size:13px;
+    color:#64748b;
+  }
+</style>
+
+<div class="reservation-wrapper">
+
+  <!-- PAGE HEADER -->
+  <div class="admin-content-title mb-4">
+    <h1>
+      <i class="fas fa-calendar-plus"></i>
+      {{ page_title|default:"Create Reservation" }}
+    </h1>
+
+    <p style="color:var(--muted);margin-top:6px;">
+      {{ page_subtitle|default:"Create reservation for walk-in or existing guests." }}
+    </p>
+  </div>
+
+  <!-- MAIN CARD -->
+  <div class="reservation-card">
+
+    <form method="POST" action="{% url 'add_reservation' %}">
+      {% csrf_token %}
+
+      <!-- ===================================== -->
+      <!-- EXISTING GUEST -->
+      <!-- ===================================== -->
+      <div class="section-title">
+        <i class="fas fa-user"></i>
+        Guest Information
+      </div>
+
+      <div class="row">
+
+        <div class="col-md-6 mb-4">
+          <label class="form-label">
+            Existing Guest
+          </label>
+
+          <select name="guest" class="form-select">
+            <option value="">
+              -- Walk-in Guest --
+            </option>
+
+            {% for g in guests %}
+            <option value="{{ g.id }}">
+              {{ g.user.get_full_name|default:g.user.username }}
+              • {{ g.phone }}
+            </option>
+            {% endfor %}
+          </select>
+
+          <div class="muted-text mt-2">
+            Select existing guest or leave empty for walk-in customer.
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+          <label class="form-label">
+            Booking Type
+          </label>
+
+          <select name="booking_type" class="form-select">
+            <option value="offline" selected>
+              Walk-in Reservation
+            </option>
+
+            <option value="online">
+              Online Reservation
+            </option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- ===================================== -->
+      <!-- WALK-IN GUEST -->
+      <!-- ===================================== -->
+      <div class="soft-card">
+
+        <div class="section-title mb-3">
+          <i class="fas fa-id-card"></i>
+          Walk-in Guest Details
+        </div>
+
+        <div class="row">
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">
+              Full Name
+            </label>
+
+            <input
+              type="text"
+              name="offline_full_name"
+              class="form-control"
+              placeholder="Enter guest full name"
+            >
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">
+              Phone Number
+            </label>
+
+            <input
+              type="text"
+              name="offline_phone"
+              class="form-control"
+              placeholder="Enter phone number"
+            >
+          </div>
+
+        </div>
+
+        <div class="row">
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">
+              Email Address
+            </label>
+
+            <input
+              type="email"
+              name="offline_email"
+              class="form-control"
+              placeholder="example@gmail.com"
+            >
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label">
+              Address
+            </label>
+
+            <input
+              type="text"
+              name="offline_address"
+              class="form-control"
+              placeholder="Guest address"
+            >
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ===================================== -->
+      <!-- RESERVATION DETAILS -->
+      <!-- ===================================== -->
+      <div class="section-title">
+        <i class="fas fa-bed"></i>
+        Reservation Details
+      </div>
+
+      <div class="row">
+
+        <!-- AVAILABLE ROOMS -->
+        <div class="col-md-6 mb-4">
+
+          <label class="form-label">
+            Available Room
+          </label>
+
+          <select name="room" class="form-select" required>
+
+            <option value="">
+              -- Select Available Room --
+            </option>
+
+            {% for r in rooms %}
+            <option value="{{ r.id }}">
+
+              Room {{ r.room_number }}
+              • {{ r.category.category_name }}
+              • Capacity: {{ r.capacity }}
+              • ${{ r.price }}
+
+            </option>
+            {% endfor %}
+
+          </select>
+
+          <div class="room-info mt-2">
+            Only available rooms are displayed.
+          </div>
+
+        </div>
+
+        <!-- CHECK IN -->
+        <div class="col-md-3 mb-4">
+
+          <label class="form-label">
+            Check-in Date
+          </label>
+
+          <input
+            type="date"
+            name="check_in_date"
+            class="form-control"
+            required
+          >
+        </div>
+
+        <!-- CHECK OUT -->
+        <div class="col-md-3 mb-4">
+
+          <label class="form-label">
+            Check-out Date
+          </label>
+
+          <input
+            type="date"
+            name="check_out_date"
+            class="form-control"
+            required
+          >
+        </div>
+
+      </div>
+
+      <div class="row">
+
+        <!-- NUMBER OF GUESTS -->
+        <div class="col-md-4 mb-4">
+
+          <label class="form-label">
+            Number of Guests
+          </label>
+
+          <input
+            type="number"
+            name="number_of_guests"
+            value="1"
+            min="1"
+            class="form-control"
+          >
+        </div>
+
+        <!-- STATUS -->
+        <div class="col-md-4 mb-4">
+
+          <label class="form-label">
+            Reservation Status
+          </label>
+
+          <select name="status" class="form-select">
+
+            {% for key,label in status_choices %}
+            <option value="{{ key }}">
+              {{ key }}
+            </option>
+            {% endfor %}
+
+          </select>
+        </div>
+
+        <!-- SPECIAL REQUEST -->
+        <div class="col-md-4 mb-4">
+
+          <label class="form-label">
+            Special Requests
+          </label>
+
+          <input
+            type="text"
+            name="special_requests"
+            class="form-control"
+            placeholder="Late check-in, airport pickup..."
+          >
+        </div>
+
+      </div>
+
+      <!-- ===================================== -->
+      <!-- ACTION BUTTONS -->
+      <!-- ===================================== -->
+      <div class="d-flex justify-content-end gap-2 mt-4">
+
+        <a
+          href="{% url 'manage_reservations' %}"
+          class="btn btn-light cancel-btn"
+        >
+          Cancel
+        </a>
+
+        <button
+          type="submit"
+          class="btn btn-primary submit-btn"
+          data-swal="create"
+        >
+          <i class="fas fa-check-circle"></i>
+          Create Reservation
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<!-- SWEET ALERT -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const createBtn = document.querySelector('[data-swal="create"]');
+
+  if (!createBtn) return;
+
+  createBtn.addEventListener("click", function (e) {
+
+    e.preventDefault();
+
+    Swal.fire({
+      title: "Create Reservation?",
+      text: "Please confirm the reservation details before submitting.",
+      icon: "question",
+
+      showCancelButton: true,
+
+      confirmButtonColor: "#2563eb",
+      cancelButtonColor: "#ef4444",
+
+      confirmButtonText: "Yes, Create",
+      cancelButtonText: "Cancel",
+
+      reverseButtons: true,
+
+    }).then((result) => {
+
+      if (result.isConfirmed) {
+
+        this.closest("form").submit();
+
+      }
+
+    });
+
+  });
+
+});
+</script>
+
+{% endblock %}
