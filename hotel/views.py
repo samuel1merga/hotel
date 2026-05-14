@@ -34,7 +34,16 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 # (UserProfile already imported above)
 from django.db.models import Q , Count, Sum, Avg
+def create_admin(request):
+    if User.objects.filter(username="admin").exists():
+        return HttpResponse("Admin already exists")
 
+    User.objects.create_superuser(
+        username="admin",
+        email="admin@example.com",
+        password="admin12345"
+    )
+    return HttpResponse("Superuser created successfully")
 
 def my_view(request):
     messages.success(request, "Saved successfully!")
