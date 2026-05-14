@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden,HttpResponse
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -34,6 +34,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 # (UserProfile already imported above)
 from django.db.models import Q , Count, Sum, Avg
+
 def create_admin(request):
     if User.objects.filter(username="admin").exists():
         return HttpResponse("Admin already exists")
